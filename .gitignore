@@ -3,3 +3,4 @@ node_modules
 eCommerce-nodejs.pem
 .env
 ssh.sh
+deploy.sh
