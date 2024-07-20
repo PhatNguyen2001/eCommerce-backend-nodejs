@@ -17,6 +17,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/www/api
-            docker-compose up -d
-            ./deploy.sh
+            echo "Connected to EC2 instance successfully"
+            # cd /home/ubuntu/www/api
+            # docker-compose up -d
+            # ./deploy.sh
