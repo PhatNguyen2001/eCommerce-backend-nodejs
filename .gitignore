@@ -1,3 +1,5 @@
 node_modules
 .env
 eCommerce-nodejs.pem
+.env
+ssh.sh
