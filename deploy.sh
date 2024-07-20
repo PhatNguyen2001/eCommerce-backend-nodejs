@@ -5,6 +5,6 @@ git pull origin main
 docker-compose down
 # docker-compose build
 docker-compose up -d 
-
+#testingdeploy
 # In ra thông báo hoàn tất
 echo "Triển khai hoàn tất thành công!"
