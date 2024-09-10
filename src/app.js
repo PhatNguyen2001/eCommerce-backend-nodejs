@@ -2,6 +2,8 @@ import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet'
 import compression from 'compression';
+import { instanceMongo } from './database/mongoDb.js'
+import { checkOverLoad } from './helper/check.connect.js'
 const app = express();
 
 //init middleware
@@ -10,6 +12,9 @@ app.use(helmet())
 app.use(compression())
 
 //init database
+// const { countConnect } = require('./helper/check.connect.js')
+// countConnect()
+checkOverLoad()
 
 //init routes
 app.get('/', (req,res,next) => {
