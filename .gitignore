@@ -4,3 +4,4 @@ eCommerce-nodejs.pem
 .env
 ssh.sh
 deploy.sh
+package-lock.json
