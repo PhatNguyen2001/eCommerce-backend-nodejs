@@ -1,11 +1,13 @@
 import mongoose from 'mongoose';
 import { countConnect } from '../helper/check.connect.js';
-class Database {
-    connection = `mongodb://localhost:27017/eCommerce`
+import { config } from '../configs/config.js';
+
+export default class Database {
+    connection = `mongodb://${config.db.host}:${config.db.port}/${config.db.name}`
     constructor(){
         this.connect()
     }
-
+    
     static getInstance() {
         if(!Database.instance) {
             Database.instance = new Database()
@@ -20,12 +22,14 @@ class Database {
         }
 
         mongoose.connect(this.connection).then(rs => {
-            console.log(`connected MongoDb: port 27017`, countConnect())
+            console.log(`connected MongoDb: port ${config.db.port}`, countConnect())
 
         }).catch(err => {
             console.log(`Error Connect`)
+            console.log(err)
+            console.log(this.connection)
         });
     }
 }
 
-export const instanceMongo = Database.getInstance()
+// export const instanceMongo = Database.getInstance()

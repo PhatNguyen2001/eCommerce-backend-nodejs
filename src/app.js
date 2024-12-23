@@ -1,28 +1,28 @@
 import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet'
-import compression from 'compression';
-import { instanceMongo } from './database/mongoDb.js'
+// import compression from 'compression';
+import Database from './database/mongoDb.js'
+import { router } from './routes/index.js';
 const app = express();
 
 //init middleware
 app.use(morgan("dev"))
 app.use(helmet())
-app.use(compression())
+app.use(express.json())
+app.use(express.urlencoded({
+    extended: true
+}))
 
+// app.use(compression())
 //init database
+Database.getInstance()
 // const { countConnect } = require('./helper/check.connect.js')
 // countConnect()
 // checkOverLoad()
 
 //init routes
-app.get('/', (req,res,next) => {
-    const compressStr = "demo"
-    return res.status(200).json({
-        message: "Demo",
-        metadata: compressStr.repeat(10000)
-    })
-} )
+app.use('/api/v1',router)
 //handling error
 
 
