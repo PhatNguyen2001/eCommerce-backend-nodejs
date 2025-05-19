@@ -41,6 +41,8 @@ export async function createTokenPair(payload, publicKey, privateKey) {
 
     const jwt =  JWT.verify(accessToken,publicKey)
     console.log('JWT::',jwt)
+    const jwtRefresh =  JWT.verify(refreshToken,privateKey)
+    console.log('refreshToken::',jwtRefresh)
     return { accessToken, refreshToken }
 }
 

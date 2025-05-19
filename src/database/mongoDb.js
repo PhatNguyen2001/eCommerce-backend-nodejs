@@ -3,7 +3,7 @@ import { countConnect } from '../helper/check.connect.js';
 import { config } from '../configs/config.js';
 
 export default class Database {
-    connection = `mongodb://${config.db.host}:${config.db.port}/${config.db.name}`
+    connection = `mongodb://${config.db.user}:${config.db.password}@${config.db.host}:${config.db.port}/${config.db.name}?authSource=admin`
     constructor(){
         this.connect()
     }
