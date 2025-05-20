@@ -1,13 +1,13 @@
-import express from 'express';
-import publicRoute from './public/index.js'
+'use strict'
 
-export const router = express.Router()
+const express = require('express')
+const router = express.Router()
 
-// router.use('/api/v1',publicController.signUp)
-router.get('/shopss', (req,res,next) => {
-    return res.status(200).json({
-        message: "Demo",
-    })
-})
+router.use('/v1/api', require('./access'))
+// router.get('/', (req, res, next) => {
+//     return res.status(200).json({
+//         message: 'Welcome Fantips '
+//     })
+// })
 
-router.use('/shop', publicRoute);
+module.exports = router

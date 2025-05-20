@@ -1,32 +1,32 @@
-'use strict'
-import bcript from 'bcrypt' 
-import { Schema , model } from 'mongoose' 
+'use strict';
+const bcrypt = require('bcrypt');
+const { Schema, model } = require('mongoose');
 
-const DOCUMENT_NAME = 'Shop'
-const COLECTION_NAME = 'Shops'
-// Declare the Schema of the Mongo model
-var ShopSchema = new Schema({
-    name:{
-        type:String,
-        trim:true,
+const DOCUMENT_NAME = 'Shop';
+const COLECTION_NAME = 'Shops';
+
+const ShopSchema = new Schema({
+    name: {
+        type: String,
+        trim: true,
         maxLength: 150
     },
-    email:{
-        type:String,
-        unique:true,
-        trim:true,
-    },  
-    password:{
-        type:String,
-        required:true,
+    email: {
+        type: String,
+        unique: true,
+        trim: true,
     },
-    status:{
-        type:String,
-        enum: ['active','inactive'],
+    password: {
+        type: String,
+        required: true,
+    },
+    status: {
+        type: String,
+        enum: ['active', 'inactive'],
         default: 'inactive'
     },
-    verify:{
-        type:Schema.Types.Boolean,
+    verify: {
+        type: Schema.Types.Boolean,
         default: 'false'
     },
     roles: {
@@ -38,13 +38,14 @@ var ShopSchema = new Schema({
     collection: COLECTION_NAME
 });
 
-ShopSchema.pre('save', async function(next) {
-    if(this.isModified('password') || this.isNew) {
-        this.password = await bcript.hash(this.password,10)
+// Encrypt password before saving
+ShopSchema.pre('save', async function (next) {
+    if (this.isModified('password') || this.isNew) {
+        this.password = await bcrypt.hash(this.password, 10);
     }
     next();
-})
+});
 
 const Shop = model(DOCUMENT_NAME, ShopSchema);
-//Export the model
-export default Shop
+
+module.exports = Shop;

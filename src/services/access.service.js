@@ -1,37 +1,37 @@
-import shopModel from "../models/shop.model.js"
-import KeyToken from "../models/keyToken.model.js"
-import crypto from 'crypto'
-import { createKeyToken, createTokenPair, getInfoData } from '../utils/helper.js'
-import { token } from "morgan"
-import { format } from "path"
-
-const RoleShop = { 
+'use strict'
+const shopModel = require('../models/shop.model')
+const KeyToken = require('../models/keyToken.model')
+const crypto = require('crypto')
+const KeyTokenService = require('../services/keyToken.service')
+const { createTokenPair } = require('../auth/authUtils')
+const getInfoData = require('../utils/index')
+const RoleShop = {
     SHOP: 'SHOP',
     WRITE: 'WRITTER',
     EDITOR: 'EDITOR',
     ADMIN: 'ADMIN'
 }
 
-class PublicController {
-    async signUp (req, res,next) {
-        const {name, email, password} = req.body 
+class AccessService {
+    static signUp = async ({ name, email, password }) => {
+        // const { name, email, password } = req.body
 
         try {
             const shop = await shopModel.findOne({ email }).lean()
-         
-            if(shop) {
-                return res.status(200).json({
+
+            if (shop) {
+                return {
                     code: 'xxxx',
                     message: 'Shop already registered!'
-                })
+                }
             }
 
             const newShop = await shopModel.create({
-                name,email,password,roles: [RoleShop.SHOP]
+                name, email, password, roles: [RoleShop.SHOP]
             })
 
             let tokens;
-            if(newShop) {
+            if (newShop) {
                 // Generate token
                 // created privateKey, publicKey
                 // const { privateKey, publicKey } =  crypto.generateKeyPairSync('rsa', {
@@ -52,9 +52,9 @@ class PublicController {
 
                 //console.log(privateKey,publicKey) //save collection KeyStore
                 // const pubKeyString = await createKeyToken(newShop.id,publicKey)
-                const keyStore = await createKeyToken(newShop.id,publicKey,privateKey)
-
-                if(!keyStore) {
+                const keyStore = await KeyTokenService.createKeyToken({ userId: newShop._id, publicKey, privateKey })
+                console.log("key Tokennnnn:::", keyStore)
+                if (!keyStore) {
                     return {
                         code: 'xxx',
                         message: 'Public key string err!'
@@ -62,30 +62,35 @@ class PublicController {
                 }
                 // const pubKeyStringObject = crypto.createPublicKey(pubKeyString)
                 // tokens = await createTokenPair({userId: newShop.id, email}, pubKeyStringObject, privateKey)
-                tokens = await createTokenPair({userId: newShop.id, email}, publicKey, privateKey)
+                tokens = await createTokenPair({ userId: newShop.id, email }, publicKey, privateKey)
                 await KeyToken.findOneAndUpdate(
                     { user: newShop.id },
-                    { 
-                      $set: { 
-                        refreshToken: [tokens.refreshToken]
-                      } 
+                    {
+                        $set: {
+                            refreshToken: [tokens.refreshToken]
+                        }
                     },
-                    { new: true } 
-                  ).exec();
+                    { new: true }
+                ).exec();
                 console.log(`Created Token Success::`, tokens)
             }
 
-            return res.status(201).json({
-                code: '20001',
+            return {
+                code: 201,
                 metadata: {
-                    shop: getInfoData({fileds: ['_id','name','email'],object: newShop})
+                    shop: getInfoData({ fileds: ['_id', 'name', 'email'], object: newShop }),
+                    tokens
                 },
-            })
-        }catch(err) {
-            next(err)
+            }
+        } catch (err) {
+            console.log(err)
+            return {
+                code: 'xxx',
+                message: err.message,
+                status: 'error'
+            }
         }
     }
 }
 
-const publicController = new PublicController()
-export default publicController
+module.exports = AccessService

@@ -1,29 +1,32 @@
-import express from 'express';
-import morgan from 'morgan';
-import helmet from 'helmet'
-// import compression from 'compression';
-import Database from './database/mongoDb.js'
-import { router } from './routes/index.js';
+const express = require('express');
+const morgan = require('morgan');
+const helmet = require('helmet');
+// const compression = require('compression');
+const Database = require('./database/mongoDb.js');
+const router = require('./routes/index.js');
+
 const app = express();
 
 //init middleware
-app.use(morgan("dev"))
-app.use(helmet())
-app.use(express.json())
+app.use(morgan("dev"));
+app.use(helmet());
+app.use(express.json());
 app.use(express.urlencoded({
     extended: true
-}))
+}));
 
-// app.use(compression())
+// app.use(compression());  
+
 //init database
-Database.getInstance()
-// const { countConnect } = require('./helper/check.connect.js')
-// countConnect()
-// checkOverLoad()
+Database.getInstance();
+// const { countConnect } = require('./helper/check.connect.js');
+// countConnect();
+// checkOverLoad();
 
 //init routes
-app.use('/api/v1',router)
+app.use('/', router);
+
 //handling error
 
 
-export default app
+module.exports = app;  
