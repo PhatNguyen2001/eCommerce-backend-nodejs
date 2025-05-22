@@ -14,18 +14,14 @@ const RoleShop = {
 
 class AccessService {
     static signUp = async ({ name, email, password }) => {
-        // const { name, email, password } = req.body
-
         try {
             const shop = await shopModel.findOne({ email }).lean()
-
             if (shop) {
                 return {
                     code: 'xxxx',
                     message: 'Shop already registered!'
                 }
             }
-
             const newShop = await shopModel.create({
                 name, email, password, roles: [RoleShop.SHOP]
             })
