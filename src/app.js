@@ -27,6 +27,20 @@ Database.getInstance();
 app.use('/', router);
 
 //handling error
+app.use((req, res, next) => {
+    const err = new Error('Not Found')
+    err.status = 404
+    next(err)
+})
 
+app.use((err, req, res, next) => {
+    console.log("Err app use::")
+    const status = err.status || 500
+    return res.status(status).json({
+        status: 'error',
+        code: status,
+        message: err.message || 'Internal server'
+    })
+})
 
 module.exports = app;  
