@@ -17,6 +17,10 @@ const RoleShop = {
 }
 
 class AccessService {
+    static logout = async (keyStore) => {
+        return await KeyTokenService.removeKeyStore(keyStore._id)
+    }
+
     /*
         1 - Email
         2 - Password

@@ -1,8 +1,7 @@
 'use strict'
 
 const KeyToken = require('../models/keyToken.model')
-const keyTokenModel = require('../models/keyToken.model')
-
+const { Types } = require('mongoose')
 class KeyTokenService {
     static createKeyToken = async ({ userId, publicKey, privateKey, refreshToken }) => {
         try {
@@ -25,6 +24,18 @@ class KeyTokenService {
         } catch (err) {
             return err
         }
+    }
+
+    static findByUserID = async ({ userId }) => {
+        console.log(userId)
+        return await KeyToken.findOne({ user: userId }).lean()
+    }
+
+    static removeKeyStore = async (id) => {
+        console.log("id", id)
+        const del = await KeyToken.findOneAndDelete({ _id: id })
+        console.log(del)
+        return del
     }
 }
 
