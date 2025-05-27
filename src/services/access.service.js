@@ -3,12 +3,14 @@ const shopModel = require('../models/shop.model')
 const KeyToken = require('../models/keyToken.model')
 const crypto = require('crypto')
 const KeyTokenService = require('../services/keyToken.service')
-const { createTokenPair } = require('../auth/authUtils')
+const { createTokenPair, verifyJWT } = require('../auth/authUtils')
 const getInfoData = require('../utils/index')
-const { BadRequestError, ConflictRequestErorr } = require('../core/error.response')
+const { BadRequestError, ConflictRequestErorr, ForbiddentError } = require('../core/error.response')
 const { findByEmail } = require('./shop.service')
 const bcrypt = require('bcrypt')
 const { token } = require('morgan')
+const { UnAuthorization } = require('../core/error.response')
+
 const RoleShop = {
     SHOP: 'SHOP',
     WRITE: 'WRITTER',
@@ -117,6 +119,49 @@ class AccessService {
         //         status: 'error'
         //     }
         // }
+    }
+
+    /*
+        1 - cehck token use
+    */
+    static handlerRefreshToken = async (refreshToken) => {
+        const foundToken = await KeyTokenService.findByRefreshTokenUsed(refreshToken)
+        if (foundToken) {
+            // decode user who is this 
+            const { userId, email } = await verifyJWT(refreshToken, foundToken.privateKey)
+            console.log(userId, email)
+
+            //delete
+            await KeyTokenService.deleteKeyById(userId)
+            throw new ForbiddentError('Something wrong!! pls relogin')
+        }
+
+        const holderToken = await KeyTokenService.findByRefreshToken(refreshToken)
+        if (!holderToken) throw new UnAuthorization('Shop not register')
+        // verify token 
+        const { userId, email } = await verifyJWT(refreshToken, holderToken.privateKey)
+        //check user 
+        const foundShop = await findByEmail({ email })
+        if (!foundShop) throw new UnAuthorization('Shop not register')
+
+        //create new AT and RF 
+        const tokens = await createTokenPair({ userId: foundShop._id, email }, holderToken.publicKey, holderToken.privateKey)
+        //update new token 
+        await holderToken.updateOne({
+            $set: {
+                refreshToken: tokens.refreshToken
+            },
+            $addToSet: {
+                refreshTokenUsed: refreshToken
+            }
+        })
+        return {
+            user: {
+                userId,
+                email
+            },
+            tokens
+        }
     }
 }
 

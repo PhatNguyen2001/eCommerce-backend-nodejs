@@ -37,6 +37,18 @@ class KeyTokenService {
         console.log(del)
         return del
     }
+
+    static findByRefreshTokenUsed = async (refreshToken) => {
+        return await KeyToken.findOne({ refreshTokenUsed: refreshToken }).lean()
+    }
+
+    static deleteKeyById = async (userId) => {
+        return await KeyToken.deleteOne({ user: userId })
+    }
+
+    static findByRefreshToken = async (refreshToken) => {
+        return await KeyToken.findOne({ refreshToken })
+    }
 }
 
 module.exports = KeyTokenService

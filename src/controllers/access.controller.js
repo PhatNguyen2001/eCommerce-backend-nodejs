@@ -26,6 +26,13 @@ class AccessControler {
             }
         }).send(res)
     }
+
+    handlerRefreshToken = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'Get Token Sucess',
+            metadata: await AccessService.handlerRefreshToken(req.body.refreshToken)
+        }).send(res)
+    }
 }
 
 module.exports = new AccessControler 
