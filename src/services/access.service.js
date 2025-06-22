@@ -163,6 +163,37 @@ class AccessService {
             tokens
         }
     }
+
+    static handlerRefreshTokenV2 = async ({ refreshToken, user, keyStore }) => {
+        const { userId, email } = user
+        if (keyStore.refreshTokenUsed.includes(refreshToken)) {
+            await KeyTokenService.deleteKeyById(userId)
+            throw new ForbiddentError('Something wrong!! pls relogin')
+        }
+        if (keyStore.refreshToken !== refreshToken) throw new UnAuthorization('Shop not register')
+        const foundShop = await findByEmail({ email })
+        if (!foundShop) throw new UnAuthorization('Shop not register')
+
+        //create new AT and RF 
+        const tokens = await createTokenPair({ userId: foundShop._id, email }, keyStore.publicKey, keyStore.privateKey)
+        //update new token 
+        await KeyToken.updateOne(
+            { _id: keyStore._id },
+            {
+                $set: {
+                    refreshToken: tokens.refreshToken
+                },
+                $addToSet: {
+                    refreshTokenUsed: refreshToken
+                }
+            }
+        )
+        return {
+            user,
+            tokens
+        }
+
+    }
 }
 
 module.exports = AccessService

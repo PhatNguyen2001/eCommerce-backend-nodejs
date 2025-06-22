@@ -8,7 +8,8 @@ const KeyTokenService = require('../services/keyToken.service')
 const HEADER = {
     API_KEY: 'x-api-key',
     CLIENT_ID: 'x-client-id',
-    AUTHORIZATION: 'authorization'
+    AUTHORIZATION: 'authorization',
+    REFRESHTOKEN: 'x-rtoken-id'
 }
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
@@ -49,6 +50,50 @@ const authentication = asyncHandler(async (req, res, next) => {
         const decodeUser = JWT.verify(token, keyStore.publicKey)
         if (userId !== decodeUser.userId) throw new UnAuthorization('Invalid User')
         req.keyStore = keyStore
+        req.user = decodeUser
+        return next()
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
+const authenticationV2 = asyncHandler(async (req, res, next) => {
+    /*
+        1 - check userId missing ?
+        2 - get accessToken 
+        3 - verifyToken 
+        4 - chec user in DB 
+        5 - ok all => return next()
+    */
+
+    const userId = req.headers[HEADER.CLIENT_ID]
+    if (!userId) throw new UnAuthorization('Invalid request')
+    const keyStore = await KeyTokenService.findByUserID({ userId })
+    console.log(keyStore)
+    const refreshToken = req.headers[HEADER.REFRESHTOKEN]
+    if (refreshToken) {
+        try {
+            const decodeUser = JWT.verify(refreshToken, keyStore.privateKey)
+            if (userId !== decodeUser.userId) throw new UnAuthorization('Invalid User')
+            req.keyStore = keyStore
+            req.user = decodeUser
+            req.refreshToken = refreshToken
+            return next()
+        } catch (err) {
+            console.log(err)
+            throw err
+        }
+    }
+
+    const accessToken = req.headers[HEADER.AUTHORIZATION]
+    const token = accessToken.replace('Bearer ', '');
+    if (!accessToken) throw new UnAuthorization('AcessToken not found!')
+    try {
+        const decodeUser = JWT.verify(token, keyStore.publicKey)
+        if (userId !== decodeUser.userId) throw new UnAuthorization('Invalid User')
+        req.keyStore = keyStore
+        req.user = decodeUser
         return next()
     } catch (err) {
         console.log(err)
@@ -63,5 +108,6 @@ const verifyJWT = async (token, secretKey) => {
 module.exports = {
     createTokenPair,
     authentication,
+    authenticationV2,
     verifyJWT
 }
